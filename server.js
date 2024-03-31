@@ -68,19 +68,18 @@ app.get('/add-server', async (req, res) => {
         return;
     }
 
-    // // Créer le serveur Minecraft
-    // exec(command, { cwd: serverPath }, (error, stdout, stderr) => {
-    //     if (error) {
-    //         console.error(`Erreur: ${error.message}`);
-    //         res.status(500).send('Une erreur est survenue lors de la création du serveur Minecraft.');
-    //         return;
-    //     }
-    //     if (stderr) {
-    //         console.error(`stderr: ${stderr}`);
-    //     }
-    //     console.log(`stdout: ${stdout}`);
-    //     res.send('Serveur Minecraft en cours de création...');
-    // });
+    const command = `java -jar minecraft_server.${version}.jar`;
+    const file_path = `minecraft_server/${serverName}`
+    
+    exec(command, { cwd: path }, (error, stdout, stderr) => {
+      if (error) {
+        console.error(`Erreur lors de l'exécution de la commande : ${error}`);
+        return;
+      }
+      console.log(`Sortie de la commande : ${stdout}`);
+      console.error(`Erreurs de la commande : ${stderr}`);
+    });
+
 });
 
 app.listen(port, () => {
