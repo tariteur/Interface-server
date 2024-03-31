@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carré Vert</title>
+    <style>
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    height: 100vh;
+    position: relative;
+}
+
+.header {
+    position: absolute;
+    top: calc(3vh + (45vh - 6vh) / 2 - 10px); /* Centrer verticalement par rapport au carré et le déplacer légèrement vers le haut */
+    right: calc(3vh + (60vh - 6vh) / 2 + 30px); /* Centrer horizontalement par rapport au carré et le déplacer plus vers la droite */
+    font-size: 6vh;
+    color: #333;
+    z-index: 999; /* Met le texte au premier plan */
+    transform: translateX(50%);
+}
+
+
+
+.container {
+    padding: 20px;
+}
+
+.carre-vert {
+    width: 60vh;
+    height: 45vh;
+    background-color: green;
+    position: absolute;
+    top: 3vh;
+    right: 3vh;
+    border-radius: 50px;
+    border: 1vh solid black; /* Ajoute une bordure noire solide de 2px */
+}
+
+    </style>
+</head>
+<body>
+    <div class="header">Serveur de Jeux</div>
+    <div class="container">
+        <div class="carre-vert"></div>
+    </div>
+</body>
+</html>
