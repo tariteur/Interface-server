@@ -98,9 +98,8 @@ app.get('/add-server', async (req, res) => {
     });
 });
 
-app.get('/start'), (req, res) => {
+app.get('/start', async (req, res) => {
     const { serverName, versions } = req.query;
-    console.log(`${serverName} : ${versions}`)
 
     const command = `java -jar minecraft_server.${versions}.jar`;
     const file_path = `minecraft_server/${serverName}`
@@ -113,7 +112,7 @@ app.get('/start'), (req, res) => {
         console.log(`Sortie de la commande : ${stdout}`);
         console.error(`Erreurs de la commande : ${stderr}`);
     });
-}
+});
 
 // Route pour envoyer la liste des serveurs
 app.get('/servers', (req, res) => {
