@@ -68,19 +68,35 @@ app.get('/add-server', async (req, res) => {
         return;
     }
 
-    // // Créer le serveur Minecraft
-    // exec(command, { cwd: serverPath }, (error, stdout, stderr) => {
-    //     if (error) {
-    //         console.error(`Erreur: ${error.message}`);
-    //         res.status(500).send('Une erreur est survenue lors de la création du serveur Minecraft.');
-    //         return;
-    //     }
-    //     if (stderr) {
-    //         console.error(`stderr: ${stderr}`);
-    //     }
-    //     console.log(`stdout: ${stdout}`);
-    //     res.send('Serveur Minecraft en cours de création...');
-    // });
+    const command = `java -jar minecraft_server.${version}.jar`;
+    const file_path = `minecraft_server/${serverName}`
+    
+    exec(command, { cwd: file_path }, async (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Erreur lors de l'exécution de la commande : ${error}`);
+            return;
+        }
+        console.log(`Sortie de la commande : ${stdout}`);
+        console.error(`Erreurs de la commande : ${stderr}`);
+    
+        // Attendre que le fichier eula.txt soit disponible
+        const eulaFilePath = `${file_path}/eula.txt`;
+        let eulaContent = '';
+        while (!fs.existsSync(eulaFilePath)) {
+            await new Promise(resolve => setTimeout(resolve, 3000)); // Attendre 1 seconde
+        }
+    
+        // Modifier eula.txt pour mettre eula=true
+        try {
+            eulaContent = fs.readFileSync(eulaFilePath, 'utf8');
+            eulaContent = eulaContent.replace('eula=false', 'eula=true');
+            fs.writeFileSync(eulaFilePath, eulaContent);
+            console.log("Le fichier eula.txt a été modifié avec succès.");
+        } catch (err) {
+            console.error(`Erreur lors de la modification du fichier eula.txt : ${err}`);
+        }
+    });
+
 });
 
 app.listen(port, () => {
