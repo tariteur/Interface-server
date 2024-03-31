@@ -1,0 +1,60 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créer et démarrer des serveurs Minecraft</title>
+    <script>
+        function createServer() {
+            const serverNameInput = document.getElementById('server-name');
+            const versionSelect = document.getElementById('version-select');
+            const serverName = serverNameInput.value.trim();
+            const selectedVersion = versionSelect.value;
+
+            if (serverName === '') {
+                alert('Veuillez saisir un nom pour le serveur.');
+                return;
+            }
+
+            // Vérifier si le nom du serveur existe déjà
+            const existingServers = Array.from(document.querySelectorAll('#servers li')).map(li => li.textContent.trim());
+            if (existingServers.includes(serverName)) {
+                alert(`Le serveur "${serverName}" existe déjà.`);
+                return;
+            }
+
+            // Télécharger le fichier JAR et créer le serveur
+            window.location.href = `/add-server?serverName=${serverName}&version=${selectedVersion}`;
+        }
+
+        // Récupérer les versions disponibles depuis le serveur Node.js et afficher sur la page
+        fetch('/versions')
+            .then(response => response.json())
+            .then(versions => {
+                const versionSelect = document.getElementById('version-select');
+                versions.forEach(version => {
+                    const option = document.createElement('option');
+                    option.value = version.version;
+                    option.textContent = version.version;
+                    versionSelect.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Erreur :', error));
+    </script>
+</head>
+<body>
+    <h1>Créer et démarrer des serveurs Minecraft</h1>
+    <label for="server-name">Nom du serveur :</label>
+    <input type="text" id="server-name">
+    <br><br>
+    <label for="version-select">Choisissez une version :</label>
+    <select id="version-select"></select>
+    <button onclick="createServer()">Créer le serveur</button>
+
+    <h2>Serveurs créés</h2>
+    <ul id="servers">
+        <!-- Liste des serveurs créés -->
+    </ul>
+</body>
+</html>
