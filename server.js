@@ -43,19 +43,6 @@ async function downloadJar(serverName, version) {
     const jarFilePath = path.join(serverFolder, `minecraft_server.${version}.jar`);
     jarResponse.data.pipe(fs.createWriteStream(jarFilePath));
 
-    // Télécharger les autres fichiers nécessaires
-    const otherFiles = versionInfo.files || []; // Assurez-vous que votre fichier JSON contient une clé "files" avec les noms et URL des fichiers supplémentaires
-    for (const fileObj of otherFiles) {
-        const { url } = fileObj;
-        const fileResponse = await axios({
-            url,
-            method: 'GET',
-            responseType: 'stream',
-        });
-        const filePath = path.join(serverFolder, serverName);
-        fileResponse.data.pipe(fs.createWriteStream(filePath));
-    }
-
     return new Promise((resolve, reject) => {
         jarResponse.data.on('end', () => {
             resolve();
@@ -81,19 +68,19 @@ app.get('/add-server', async (req, res) => {
         return;
     }
 
-    // Créer le serveur Minecraft
-    exec(`java -jar Minecraft_Server/${serverName}/minecraft_server.${version}.jar`, (error, stdout, stderr) => {
-        if (error) {
-            console.error(`Erreur: ${error.message}`);
-            res.status(500).send('Une erreur est survenue lors de la création du serveur Minecraft.');
-            return;
-        }
-        if (stderr) {
-            console.error(`stderr: ${stderr}`);
-        }
-        console.log(`stdout: ${stdout}`);
-        res.send('Serveur Minecraft en cours de création...');
-    });
+    // // Créer le serveur Minecraft
+    // exec(command, { cwd: serverPath }, (error, stdout, stderr) => {
+    //     if (error) {
+    //         console.error(`Erreur: ${error.message}`);
+    //         res.status(500).send('Une erreur est survenue lors de la création du serveur Minecraft.');
+    //         return;
+    //     }
+    //     if (stderr) {
+    //         console.error(`stderr: ${stderr}`);
+    //     }
+    //     console.log(`stdout: ${stdout}`);
+    //     res.send('Serveur Minecraft en cours de création...');
+    // });
 });
 
 app.listen(port, () => {
