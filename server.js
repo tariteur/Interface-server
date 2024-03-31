@@ -96,8 +96,72 @@ app.get('/add-server', async (req, res) => {
             console.error(`Erreur lors de la modification du fichier eula.txt : ${err}`);
         }
     });
-
 });
+
+app.get('/start'), (req, res) => {
+    const { serverName, versions } = req.query;
+    console.log(`${serverName} : ${versions}`)
+
+    const command = `java -jar minecraft_server.${versions}.jar`;
+    const file_path = `minecraft_server/${serverName}`
+    
+    exec(command, { cwd: file_path }, async (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Erreur lors de l'exécution de la commande : ${error}`);
+            return;
+        }
+        console.log(`Sortie de la commande : ${stdout}`);
+        console.error(`Erreurs de la commande : ${stderr}`);
+    });
+}
+
+// Route pour envoyer la liste des serveurs
+app.get('/servers', (req, res) => {
+    const serverFolder = 'minecraft_server';
+    fs.readdir(serverFolder, (err, files) => {
+        if (err) {
+            console.error(`Erreur lors de la lecture du dossier des serveurs : ${err}`);
+            res.status(500).send(`Une erreur est survenue lors de la lecture du dossier des serveurs.`);
+            return;
+        }
+
+        const serverList = [];
+
+        files.forEach(server => {
+            const serverPath = path.join(serverFolder, server);
+
+            fs.readdir(serverPath, (err, serverFiles) => {
+                if (err) {
+                    console.error(`Erreur lors de la lecture du dossier du serveur ${server} : ${err}`);
+                    return;
+                }
+
+                const versionFolder = serverFiles.find(file => fs.statSync(path.join(serverPath, file)).isDirectory() && file.toLowerCase().startsWith('versions'));
+
+                if (versionFolder) {
+                    fs.readdir(path.join(serverPath, versionFolder), (err, versions) => {
+                        if (err) {
+                            console.error(`Erreur lors de la lecture du dossier des versions du serveur ${server} : ${err}`);
+                            return;
+                        }
+
+                        serverList.push({ name: server, versions: versions });
+                        if (serverList.length === files.length) {
+                            res.json(serverList);
+                        }
+                    });
+                } else {
+                    serverList.push({ name: server, versions: [] });
+                    if (serverList.length === files.length) {
+                        res.json(serverList);
+                    }
+                }
+            });
+        });
+    });
+});
+
+
 
 app.listen(port, () => {
     console.log(`Serveur web démarré sur http://localhost:${port}`);

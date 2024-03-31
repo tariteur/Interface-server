@@ -1,0 +1,7 @@
+[16:59:38] [ServerMain/WARN]: Failed to add PDH Counter: \Paging File(_Total)\% Usage, Error code: 0xC0000BB8
+[16:59:38] [ServerMain/WARN]: Failed to add counter for PDH counter: \Paging File(_Total)\% Usage
+[16:59:38] [ServerMain/WARN]: Disabling further attempts to query Paging File.
+[16:59:39] [ServerMain/WARN]: COM exception: Invalid Query: SELECT PERCENTUSAGE FROM Win32_PerfRawData_PerfOS_PagingFile
+[16:59:43] [ServerMain/ERROR]: Failed to load properties from file: server.properties
+[16:59:43] [ServerMain/WARN]: Failed to load eula.txt
+[16:59:43] [ServerMain/INFO]: You need to agree to the EULA in order to run the server. Go to eula.txt for more info.
