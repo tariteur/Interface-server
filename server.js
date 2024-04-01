@@ -1,3 +1,4 @@
+// server.js
 const express = require('express');
 const bodyParser = require('body-parser');
 const { exec } = require('child_process');
@@ -6,10 +7,7 @@ const axios = require('axios');
 const path = require('path');
 
 const app = express();
-const server = require('http').createServer(app);
-const io = require('socket.io')(server); // Utilisation de Socket.IO
-
-const port = 4000;
+const port = 3000;
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'src')));
@@ -55,9 +53,6 @@ async function downloadJar(serverName, version) {
     });
 }
 
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'src', 'menu_serveur_mincraft.html'));
-});
 
 // Créer et démarrer un serveur Minecraft
 app.get('/add-server', async (req, res) => {
@@ -74,9 +69,9 @@ app.get('/add-server', async (req, res) => {
     }
 
     const command = `java -jar minecraft_server.${version}.jar`;
-    const file_path = `minecraft_server/${serverName}`;
+    const file_path = `minecraft_server/${serverName}`
     
-    const child = exec(command, { cwd: file_path }, async (error, stdout, stderr) => {
+    exec(command, { cwd: file_path }, async (error, stdout, stderr) => {
         if (error) {
             console.error(`Erreur lors de l'exécution de la commande : ${error}`);
             return;
@@ -101,39 +96,21 @@ app.get('/add-server', async (req, res) => {
             console.error(`Erreur lors de la modification du fichier eula.txt : ${err}`);
         }
     });
-
-    // Envoyer la sortie de la console au client via Socket.IO
-    child.stdout.on('data', (data) => {
-        io.emit('serverConsole', { serverName, output: data.toString() });
-    });
-
-    child.stderr.on('data', (data) => {
-        io.emit('serverConsole', { serverName, output: data.toString() });
-    });
 });
 
 app.get('/start', async (req, res) => {
     const { serverName, versions } = req.query;
 
     const command = `java -jar minecraft_server.${versions}.jar`;
-    const file_path = `minecraft_server/${serverName}`;
+    const file_path = `minecraft_server/${serverName}`
     
-    const child = exec(command, { cwd: file_path }, async (error, stdout, stderr) => {
+    exec(command, { cwd: file_path }, async (error, stdout, stderr) => {
         if (error) {
             console.error(`Erreur lors de l'exécution de la commande : ${error}`);
             return;
         }
         console.log(`Sortie de la commande : ${stdout}`);
         console.error(`Erreurs de la commande : ${stderr}`);
-    });
-
-    // Envoyer la sortie de la console au client via Socket.IO
-    child.stdout.on('data', (data) => {
-        io.emit('serverConsole', { serverName, output: data.toString() });
-    });
-
-    child.stderr.on('data', (data) => {
-        io.emit('serverConsole', { serverName, output: data.toString() });
     });
 });
 
@@ -183,11 +160,8 @@ app.get('/servers', (req, res) => {
     });
 });
 
-// Connexion du serveur à Socket.IO
-io.on('connection', (socket) => {
-    console.log('Un client s\'est connecté');
-});
 
-server.listen(port, () => {
+
+app.listen(port, () => {
     console.log(`Serveur web démarré sur http://localhost:${port}`);
 });

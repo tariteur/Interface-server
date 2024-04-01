@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créer et démarrer des serveurs Minecraft</title>
+    <script src="script.js"></script>
+</head>
+<body>
+    <h1>Créer et démarrer des serveurs Minecraft</h1>
+    <label for="server-name">Nom du serveur :</label>
+    <input type="text" id="server-name">
+    <br><br>
+    <label for="version-select">Choisissez une version :</label>
+    <select id="version-select"></select>
+    <button onclick="createServer()">Créer le serveur</button>
+
+    <h2>Serveurs créés</h2>
+    <ul id="server-list">
+        <!-- Liste des serveurs créés -->
+    </ul>
+</body>
+</html>
