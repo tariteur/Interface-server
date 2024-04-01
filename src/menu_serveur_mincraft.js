@@ -1,7 +1,19 @@
+let selectServer = {name: "", versions: ""}
+
+const socket = io('http://localhost:4000'); // Mettez votre URL correcte
+console.log("test")
+socket.on('serverConsole', (data) => {
+    console.log(data.output);
+    const server_console_viewer = document.getElementById('server-console-viewer');
+    const listItem = document.createElement('li');
+    listItem.textContent = data.output;
+    server_console_viewer.appendChild(listItem);
+});
+
 function createServer() {
-    const serverNameInput = document.getElementById('server-name');
+    const serverNameNewInput = document.getElementById('server-name-new');
     const versionSelect = document.getElementById('version-select');
-    const serverName = serverNameInput.value.trim();
+    const serverName = serverNameNewInput.value.trim();
     const selectedVersion = versionSelect.value;
 
     if (serverName === '') {
@@ -32,22 +44,28 @@ function createServer() {
 function ServerDiv(state) {
     const content_add_server = document.getElementById('content-add-server');
     const add_button = document.getElementById('add-button');
+    const data_server = document.getElementById('data-server');
 
     if (state) {
         content_add_server.style.display = "block";
         add_button.style.display = "none";
+        data_server.style.direction = "none";
     } else {
         content_add_server.style.display = "none";
         add_button.style.display = "block";
     }
 }
 
-function removeServerDiv() {
+function dataServerDiv(state) {
+    const data_server = document.getElementById('data-server');
     const content_add_server = document.getElementById('content-add-server');
-    const add_button = document.getElementById('add-button');
 
-    content_add_server.style.display = "none";
-    add_button.style.display = "block";
+    if (state) {
+        data_server.style.display = "block";
+        content_add_server.style.display = "none";
+    } else {
+        data_server.style.display = "none";
+    }
 }
 
 // Récupérer les versions disponibles depuis le serveur Node.js et afficher sur la page
@@ -64,8 +82,19 @@ fetch('/versions')
     })
     .catch(error => console.error('Erreur :', error));
 
-function startServer(serverName, versions) {
-    fetch(`/start?serverName=${serverName}&versions=${versions}`)
+function startServer() {
+    fetch(`/start?serverName=${selectServer.name}&versions=${selectServer.versions}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Une erreur s\'est produite lors du démarrage du serveur.');
+            }
+            console.log('Le serveur a été démarré avec succès.');
+        })
+        .catch(error => console.error('Erreur :', error));
+}
+
+function stopServer() {
+    fetch(`/stop?serverName=${selectServer.name}&versions=${selectServer.versions}`)
         .then(response => {
             if (!response.ok) {
                 throw new Error('Une erreur s\'est produite lors du démarrage du serveur.');
@@ -80,16 +109,19 @@ function updateServerList() {
     fetch('/servers')
         .then(response => response.json())
         .then(servers => {
-            const serverList = document.getElementById('server-list');
-            serverList.innerHTML = ''; // Effacer la liste actuelle des serveurs
+            const server_list = document.getElementById('server-list');
+            const server_name = document.getElementById('server-name');
+            server_list.innerHTML = ''; // Effacer la liste actuelle des serveurs
             servers.forEach(server => {
                 const listItem = document.createElement('li');
                 // Ajouter un événement de clic à chaque élément de la liste des serveurs
                 listItem.textContent = `${server.name} : ${server.versions}`;
                 listItem.addEventListener('click', () => {
-                    startServer(server.name, server.versions);
+                    dataServerDiv(true);
+                    server_name.innerHTML = `${server.name} : ${server.versions}`;
+                    selectServer = {name: server.name, versions: server.versions};
                 });
-                serverList.appendChild(listItem);
+                server_list.appendChild(listItem);
             });
         })
         .catch(error => console.error('Erreur :', error));
