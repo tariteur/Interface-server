@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualisation des fichiers du serveur Minecraft</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* Ajoutez votre propre style CSS ici */
+        /* Vous pouvez personnaliser les styles pour correspondre à votre design */
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Visualisation des fichiers du serveur Minecraft</h1>
+        <div id="file-list" class="mt-3">
+            <!-- La liste des fichiers et dossiers sera affichée ici -->
+        </div>
+        <div id="file-content" class="mt-3" style="display: none;">
+            <!-- Le contenu du fichier sera affiché ici -->
+        </div>
+    </div>
+
+    <script>
+        // Utilisez JavaScript pour récupérer la liste des fichiers et dossiers du serveur Minecraft et les afficher dans l'élément #file-list
+        window.onload = () => {
+            fetchServerFiles('');
+        };
+
+        async function fetchServerFiles(folderName) {
+            try {
+                const response = await fetch(`/folder-content?serverName=survie&folderName=${folderName}`);
+                const folderContent = await response.json();
+                displayServerFiles(folderContent);
+            } catch (error) {
+                console.error(`Erreur lors de la récupération du contenu du dossier ${folderName} :`, error);
+            }
+        }
+
+        function displayServerFiles(files) {
+            const fileListElement = document.getElementById('file-list');
+            const fileContentElement = document.getElementById('file-content');
+            fileListElement.innerHTML = ''; // Efface le contenu précédent
+
+            if (files.length === 0) {
+                fileListElement.innerHTML = '<p>Aucun fichier ou dossier trouvé.</p>';
+            } else {
+                const ul = document.createElement('ul');
+                ul.classList.add('list-group');
+
+                files.forEach(file => {
+                    const li = document.createElement('li');
+                    li.textContent = file.name;
+                    li.classList.add('list-group-item');
+                    li.addEventListener('click', () => {
+                        if (file.isDirectory) {
+                            fetchServerFiles(file.name);
+                        } else {
+                            fetchFileContent(file.name);
+                        }
+                    });
+                    ul.appendChild(li);
+                });
+
+                fileListElement.appendChild(ul);
+            }
+
+            // Cache le contenu du fichier lors de l'affichage de la liste des fichiers
+            fileContentElement.style.display = 'none';
+        }
+
+        async function fetchFileContent(fileName) {
+            try {
+                const response = await fetch(`/open-file?serverName=survie&fileName=${fileName}`);
+                const fileContent = await response.text();
+                displayFileContent(fileContent);
+            } catch (error) {
+                console.error(`Erreur lors de la récupération du contenu du fichier ${fileName} :`, error);
+            }
+        }
+
+        function displayFileContent(content) {
+            const fileContentElement = document.getElementById('file-content');
+            const fileListElement = document.getElementById('file-list');
+
+            // Cache la liste des fichiers lors de l'affichage du contenu du fichier
+            fileListElement.style.display = 'none';
+            fileContentElement.innerHTML = `<pre>${content}</pre>`;
+            fileContentElement.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Serveur de jeux</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            text-align: center;
+            padding: 20px;
+        }
+        .server {
+            float: left;
+            width: 23%; /* réduit la largeur pour éviter qu'elles ne se touchent */
+            margin: 10px;
+            padding: 10px;
+            border: 2px solid #0c0b0b;
+            border-radius: 10px;
+            position: relative;
+        }
+        .server img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 10px;
+            max-height: 200px; /* Ajustez la hauteur maximale selon vos préférences */
+        }
+        .server .text-over {
+            position: absolute;
+            top: 9px; 
+            left: 10px; /* Ajustez la position horizontale selon vos préférences */
+            color: white; /* Couleur du texte */
+            background-color: rgba(0, 0, 0, 0.5); /* Fond semi-transparent pour le texte */
+            padding: 5px 10px; /* Ajustez le padding selon vos préférences */
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Serveur de jeux</h1>
+        <!-- Ajoutez ici le contenu de votre page -->
+    </div>
+    <div class="server" onclick="window.location.href='menu_serveur_mincraft.html'">
+        <div class="text-over">Minecraft</div>
+        <img src="https://store-images.s-microsoft.com/image/apps.608.13850085746326678.a9b1e0db-29d0-40f3-a86c-2155353d053c.bc981608-3fa4-4929-82ff-b162b8788784?q=90&w=480&h=270">
+    </div>
+    <div class="server">
+        <div class="text-over">Asseto</div>
+        <img src="https://gaming-cdn.com/images/products/1263/616x353/assetto-corsa-pc-jeu-steam-cover.jpg?v=1707830876">
+    </div>
+</body>
+</html>

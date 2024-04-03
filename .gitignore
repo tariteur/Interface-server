@@ -1,0 +1,5 @@
+# Ignorer le dossier minecraft_server
+minecraft_server/
+
+# Ignorer le dossier node_modules
+node_modules/

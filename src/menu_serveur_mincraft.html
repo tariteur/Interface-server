@@ -143,14 +143,15 @@
                 <br><br>
                 <label for="version-select">Choisissez une version :</label>
                 <select id="version-select"></select>
-                <button onclick="createServer();">Créer le serveur</button>
+                <button id="create-server-button">Créer le serveur</button>
             </div>
             <div id="data-server">
                 <h2 id="server-name">...</h2>
-                <button onclick="startServer();">Démarrer</button>
-                <button onclick="stopServer();">Arretter</button>
+                <button id="start-server-button">Démarrer</button>
+                <button id="stop-server-button">Arretter</button>
                 <div id="console">server-console
                     <input id="server-console"></input>
+                    <button id="send-command-button">Envoyer</button>
                     <ul id="server-console-viewer">
                         <!-- Log server -->
                     </ul>
