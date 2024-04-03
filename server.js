@@ -226,28 +226,6 @@ class MinecraftServerManager {
             });
         });
     }
-
-    handleOpenFileRequest(req, res) {
-        const { serverName, fileName } = req.query;
-        const filePath = `minecraft_server/${serverName}/${fileName}`;
-        res.sendFile(filePath);
-    }
-    
-    handleFolderContentRequest(req, res) {
-        const { serverName, folderName } = req.query;
-        const folderPath = `minecraft_server/${serverName}/${folderName}`;
-        fs.readdir(folderPath, (err, files) => {
-            if (err) {
-                console.error(`Erreur lors de la lecture du contenu du dossier ${folderName} :`, err);
-                res.status(500).send(`Erreur lors de la lecture du contenu du dossier ${folderName}.`);
-                return;
-            }
-    
-            const fileList = files.map(file => ({ name: file, isDirectory: fs.statSync(path.join(folderPath, file)).isDirectory() }));
-            res.json(fileList);
-        });
-    }
-    
     
 
     start() {
