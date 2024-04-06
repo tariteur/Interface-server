@@ -125,38 +125,38 @@
     <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
     <script src="menu_serveur_mincraft.js"></script>
 </head>
-    <body>
-        <div class="container">
-            <div class="content">
-                <h1>Serveurs Minecraft</h1>
-            </div>
-            <div class="sidebar">
-                <h2>Ajouter un serveur</h2>
-                <button id="add-button" onclick="ServerDiv(true)">+</button>
-                <h2>Liste des serveur :</h2>
-                <ul id="server-list">
-                    <!-- Liste des serveurs créés -->
+<body>
+    <div class="container">
+        <div class="content">
+            <h1>Serveurs Minecraft</h1>
+        </div>
+        <div class="sidebar">
+            <h2>Ajouter un serveur</h2>
+            <button id="add-button" onclick="minecraftClient.serverDiv(true)">+</button>
+            <h2>Liste des serveur :</h2>
+            <ul id="server-list">
+                <!-- Liste des serveurs créés -->
+            </ul>
+        </div>
+        <div id="content-add-server"><label for="server-name-new">Nom du serveur :</label>
+            <input type="text" id="server-name-new">
+            <br><br>
+            <label for="version-select">Choisissez une version :</label>
+            <select id="version-select"></select>
+            <button id="create-server-button">Créer le serveur</button>
+        </div>
+        <div id="data-server">
+            <h2 id="server-name">...</h2>
+            <button id="start-server-button">Démarrer</button>
+            <button id="stop-server-button">Arretter</button>
+            <div id="console">server-console
+                <input id="server-console"></input>
+                <button id="send-command-button">Envoyer</button>
+                <ul id="server-console-viewer">
+                    <!-- Log server -->
                 </ul>
             </div>
-            <div id="content-add-server"><label for="server-name-new">Nom du serveur :</label>
-                <input type="text" id="server-name-new">
-                <br><br>
-                <label for="version-select">Choisissez une version :</label>
-                <select id="version-select"></select>
-                <button id="create-server-button">Créer le serveur</button>
-            </div>
-            <div id="data-server">
-                <h2 id="server-name">...</h2>
-                <button id="start-server-button">Démarrer</button>
-                <button id="stop-server-button">Arretter</button>
-                <div id="console">server-console
-                    <input id="server-console"></input>
-                    <button id="send-command-button">Envoyer</button>
-                    <ul id="server-console-viewer">
-                        <!-- Log server -->
-                    </ul>
-                </div>
-            </div>
         </div>
-    </body>
+    </div>
+</body>
 </html>
