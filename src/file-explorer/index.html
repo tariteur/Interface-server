@@ -6,7 +6,7 @@
     <title>Explorateur de Fichiers</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-        .file-explorer { display: flex; flex-direction: column; height: 100vh; }
+        .file-explorer { display: flex; flex-direction: column; height: 50%; width: 50%; }
         .header { background-color: #0078d7; color: #fff; padding: 10px; text-align: center; }
         .content { flex-grow: 1; padding: 20px; overflow-y: auto; }
         .file-list { display: flex; flex-wrap: wrap; padding: 0; }
@@ -28,8 +28,7 @@
             <button id="backButton">&larr; Retour</button>
         </div>
         <div class="content" id="contentContainer"></div>
+        <div class="popup" id="popupMessage"></div>
     </div>
-
-    <div class="popup" id="popupMessage"></div>
 </body>
 </html>

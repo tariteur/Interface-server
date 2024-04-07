@@ -21,6 +21,9 @@ class MinecraftServerClient {
         const serverNameNewInput = document.getElementById('server-name-new');
         const versionSelect = document.getElementById('version-select');
 
+        document.getElementById('add-button').addEventListener('click', () => {
+            this.serverAddDiv(true)
+        })
         document.getElementById('create-server-button').addEventListener('click', () => {
             this.createServer(serverNameNewInput.value.trim(), versionSelect.value);
         });
@@ -44,14 +47,27 @@ class MinecraftServerClient {
         });
     }
 
-    serverDiv() {
+    serverAddDiv(state) {
         const content_add_server = document.getElementById('content-add-server')
-        content_add_server.style.display = block;
+        if (state) {
+            content_add_server.style.display = "block";
+        } else {
+            content_add_server.style.display = "none";
+        }
+    }
+
+    serverDiv(state) {
+        const data_server = document.getElementById('data-server')
+        if (state) {
+            data_server.style.display = "block";
+        } else {
+            data_server.style.display = "none";
+        }
     }
     
     async fetchVersions() {
         try {
-            const response = await fetch('/minecraft/getServersList');
+            const response = await fetch('/minecraft/getVersionInfo');
             const versions = await response.json();
     
             const versionSelect = document.getElementById('version-select');
@@ -79,6 +95,8 @@ class MinecraftServerClient {
             alert(`Le serveur "${serverName}" existe déjà.`);
             return;
         }
+        
+        this.serverAddDiv(false)
     
         try {
             const response = await fetch(`/minecraft/addServer`, {
@@ -196,8 +214,8 @@ class MinecraftServerClient {
                     listItem.addEventListener('click', () => {
                         this.selectServer = { name: server.name, versions: server.versions };
                         document.getElementById('server-name').textContent = `${server.name} : ${server.versions}`;
-                        document.getElementById('data-server').style.display = "block";
-                        document.getElementById('content-add-server').style.display = "none";
+                        this.serverDiv(true)
+                        this.serverAddDiv(false)
                     });
                     serverList.appendChild(listItem);
                 });

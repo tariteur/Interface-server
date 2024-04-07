@@ -4,6 +4,7 @@ const path = require('path');
 const http = require('http');
 const socketIO = require('socket.io');
 const MinecraftServer = require('./server/minecraft/index.js');
+const FileExplorer = require('./server/file_explorer/index.js')
 
 const app = express();
 const port = 3000;
@@ -22,6 +23,9 @@ app.get('/', (req, res) => {
 // Instanciar el servidor de Minecraft
 const minecraftServer = new MinecraftServer(socket, 'C:\\Program Files\\Java\\jdk-17\\bin\\java', path.join(__dirname, 'minecraft_server'));
 
+const rootDirectory = path.join(__dirname, 'minecraft_server');
+const fileExplorer = new FileExplorer(app, rootDirectory);
+
 app.post('/minecraft/addServer', async (req, res) => {
     const { serverName, serverVersion } = req.body;
 
@@ -33,10 +37,10 @@ app.post('/minecraft/addServer', async (req, res) => {
     }
 });
 
-app.post('/minecraft/startServer', (req, res) => {
+app.post('/minecraft/startServer', async (req, res) => {
     const { serverName, serverVersion } = req.body;
     try {
-        const message = minecraftServer.startServer(serverName, serverVersion);
+        const message = await minecraftServer.startServer(serverName, serverVersion);
         res.send(message);
     } catch (error) {
         res.status(500).send(`Error: ${error.message}`);
@@ -65,11 +69,19 @@ app.post('/minecraft/sendCommand', async (req, res) => {
     }
 });
 
+app.get('/minecraft/getVersionInfo', async (req, res) => {
+    try {
+        const message = await minecraftServer.getVersionInfo();
+        res.send(message);
+    } catch (error) {
+        res.status(500).send(`Erreur : ${error.message}`);
+    }
+});
 
 app.get('/minecraft/getServersList', async (req, res) => {
     try {
-        const serversList = await minecraftServer.getServersList();
-        res.send(serversList);
+        const message = await minecraftServer.getServersList();
+        res.send(message);
     } catch (error) {
         res.status(500).send(`Erreur : ${error.message}`);
     }

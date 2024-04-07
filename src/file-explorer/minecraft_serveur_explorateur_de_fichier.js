@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const loadFiles = async (path = '') => {
         try {
-            const response = await fetch(`/files/${path}`);
+            const response = await fetch(`/file_explorer/files/${path}`);
             if (!response.ok) {
                 throw new Error('Réponse du serveur non valide');
             }
@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const response = await fetch(`/file-content/${filePath}`);
+            const response = await fetch(`/file_explorer/file-content/${filePath}`);
             if (!response.ok) {
                 throw new Error('Échec de la récupération du contenu du fichier');
             }
@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const saveFileContent = async (filePath, content) => {
         try {
-            await fetch(`/save-file/${filePath}`, {
+            await fetch(`/file_explorer/save-file/${filePath}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain' },
                 body: content

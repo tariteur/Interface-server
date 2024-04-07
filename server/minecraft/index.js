@@ -48,6 +48,8 @@ class MinecraftServer {
             } catch (err) {
                 console.error(`Erreur lors de la modification du fichier eula.txt : ${err}`);
             }
+            
+            return `Serveur ${serverName} en ${serverVersion} cree avec succes`
         });
     }
            
@@ -74,7 +76,8 @@ class MinecraftServer {
         });
 
         this.minecraftProcesses.set(serverName, minecraftProcess);
-        res.send('Serveur Minecraft démarré.');
+
+        return `Le serveur ${serverName} essaie de démarrer`
     }
 
     stopServer(serverName) {
@@ -88,33 +91,55 @@ class MinecraftServer {
         }
     }
 
-    async downloadJar(version) {
+    async downloadJar(serverName, version, serverFolder) {
         const versionInfo = await this.getVersionInfo(version);
+        console.log(`${serverName}, ${versionInfo.url}`);
+    
         if (!versionInfo) {
             throw new Error(`La version ${version} n'est pas disponible.`);
         }
-
+    
         const jarUrl = versionInfo.url;
-        const jarFilePath = path.join(this.serverFolder, `${this.serverName}/minecraft_server.${version}.jar`);
-
-        const response = await axios({
-            url: jarUrl,
-            method: 'GET',
-            responseType: 'stream'
-        });
-
-        response.data.pipe(fs.createWriteStream(jarFilePath));
-
-        return new Promise((resolve, reject) => {
-            response.data.on('end', () => resolve());
-            response.data.on('error', (err) => reject(err));
-        });
+        const serverFolderPath = path.join(this.serverFolder, serverName);
+        const jarFilePath = path.join(serverFolderPath, `minecraft_server.${version}.jar`);
+    
+        try {
+            // Create directory recursively if it doesn't exist
+            await fs.promises.mkdir(serverFolderPath, { recursive: true });
+    
+            const response = await axios({
+                url: jarUrl,
+                method: 'GET',
+                responseType: 'stream'
+            });
+    
+            const writer = fs.createWriteStream(jarFilePath);
+    
+            // Handle stream events to write data to file
+            response.data.pipe(writer);
+    
+            // Return a promise that resolves when file writing is complete
+            return new Promise((resolve, reject) => {
+                writer.on('finish', () => {
+                    console.log('Jar file downloaded successfully.');
+                    resolve();
+                });
+    
+                writer.on('error', (err) => {
+                    reject(new Error(`Failed to write jar file: ${err.message}`));
+                });
+            });
+        } catch (err) {
+            throw new Error(`Failed to download jar file: ${err.message}`);
+        }
     }
-
-    async getVersionInfo(version) {
+    
+    getVersionInfo(version) {
         // Charger les informations sur les versions depuis un fichier ou une source externe (comme un API)
         const versions = require('./versions.json');
-        return versions.find(v => v.version === version);
+
+        if(version) return versions.find(v => v.version === version);
+        return versions
     }
 
     async getServersList() {
