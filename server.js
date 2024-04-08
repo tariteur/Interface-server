@@ -23,7 +23,7 @@ app.get('/', (req, res) => {
 // Instanciar el servidor de Minecraft
 const minecraftServer = new MinecraftServer(socket, 'C:\\Program Files\\Java\\jdk-17\\bin\\java', path.join(__dirname, 'minecraft_server'));
 
-const rootDirectory = path.join(__dirname, 'minecraft_server');
+const rootDirectory = path.join(__dirname);
 const fileExplorer = new FileExplorer(app, rootDirectory);
 
 app.post('/minecraft/addServer', async (req, res) => {

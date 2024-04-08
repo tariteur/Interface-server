@@ -6,12 +6,21 @@ class FileExplorer {
         this.currentPath = '';
 
         this.backButton.addEventListener('click', this.navigateToParentDirectory.bind(this));
-        this.loadFiles(); // Chargement initial des fichiers
+
+        this.urlParams = new URLSearchParams(window.location.search);
+        this.rootDirectory = this.urlParams.get('rootDirectory');
+        this.loadFiles(this.rootDirectory);
     }
 
     async loadFiles(path = '') {
         try {
-            const response = await fetch(`/file_explorer/files/${path}`);
+            const response = await fetch(`/file_explorer/files/${path}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Root-Directory': this.rootDirectory
+                }
+            });            
             if (!response.ok) {
                 throw new Error('Réponse du serveur non valide');
             }
@@ -19,14 +28,24 @@ class FileExplorer {
             const data = await response.json();
 
             this.currentPath = path;
-            const breadcrumbs = path ? path : 'Racine';
+            const breadcrumbs = this.getBreadcrumbsDisplayPath();
             this.renderBreadcrumbs(breadcrumbs);
             this.renderFileList(data);
-            this.backButton.style.display = this.currentPath === '' ? 'none' : 'block';
+            this.backButton.style.display = this.currentPath === this.rootDirectory ? 'none' : 'block';
         } catch (error) {
             console.error('Erreur lors du chargement des fichiers', error);
         }
     }
+
+    getBreadcrumbsDisplayPath() {
+        if (this.currentPath.startsWith(this.rootDirectory)) {
+            // Extract the part of currentPath that comes after rootDirectory
+            const displayPath = `${this.rootDirectory.match(/\/([^\/]+)\/?$/)[1]}/${this.currentPath.slice(this.rootDirectory.length).replace(/^\//, '')}`;
+            return displayPath || 'error'
+        }
+        return 'error'
+    }
+
 
     renderBreadcrumbs(breadcrumbs) {
         this.contentContainer.innerHTML = `<div class="breadcrumbs">${breadcrumbs}</div>`;
@@ -150,8 +169,14 @@ class FileExplorer {
     }
 
     navigateToParentDirectory() {
+        if (this.currentPath === this.rootDirectory) {
+            return this.loadFiles(this.currentPath);
+        }
+
         const parentPath = this.currentPath.split('/').slice(0, -1).join('/');
-        this.loadFiles(parentPath);
+        if (parentPath.startsWith(this.rootDirectory)) {
+            this.loadFiles(parentPath);
+        }
     }
 }
 
