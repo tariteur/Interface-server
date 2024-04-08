@@ -215,6 +215,11 @@ class MinecraftServerClient {
                     listItem.addEventListener('click', () => {
                         this.selectServer = { name: server.name, versions: server.versions };
                         document.getElementById('server-name').textContent = `${server.name} : ${server.versions}`;
+                        
+                        const data_server = document.getElementById('data-server')
+                        const file_explorer = document.getElementById('file-explorer');
+                        file_explorer.setAttribute('data', `../file-explorer/index.html?rootDirectory=/minecraft_server/${server.name}`);
+                        data_server.appendChild(file_explorer)
                         this.serverDiv(true)
                         this.serverAddDiv(false)
                     });
