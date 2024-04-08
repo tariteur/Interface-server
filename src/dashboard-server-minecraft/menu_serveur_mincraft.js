@@ -1,7 +1,7 @@
 class MinecraftServerClient {
     constructor() {
         this.selectServer = { name: "", versions: "" };
-        this.socket = io('http://localhost:3000');
+        this.socket = io('http://localhost:80');
         this.setupSocketListeners();
         this.setupEventListeners();
         this.fetchVersions();
@@ -23,6 +23,7 @@ class MinecraftServerClient {
 
         document.getElementById('add-button').addEventListener('click', () => {
             this.serverAddDiv(true)
+            this.serverDiv(false)
         })
         document.getElementById('create-server-button').addEventListener('click', () => {
             this.createServer(serverNameNewInput.value.trim(), versionSelect.value);

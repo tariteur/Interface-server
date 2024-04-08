@@ -1,0 +1,172 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: #2f2f2f;
+    height: 100vh;
+    overflow: hidden;
+}
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 5vh;
+    height: 100vh;
+    overflow: hidden;
+}
+.container > * {
+    margin-bottom: 20px;
+}
+.container > *:last-child {
+    margin-bottom: 0;
+}
+.content {
+    z-index: 1;
+    text-align: center;
+    margin-top: 2vh;
+}
+.sidebar {
+    width: 40vh;
+    background-color: #212121; /* Fond gris foncé */
+    height: 100vh;
+    position: absolute; /* Définit la position absolue */
+    left: 0px;
+    top: 0px;
+}
+#add-button {
+    background-color: #ffffff; /* Couleur de fond du bouton */
+    border: none; /* Supprime la bordure */
+    color: #1f1f1f; /* Couleur du texte */
+    padding: 4vh 16vh; /* Espacement intérieur du bouton, ajusté pour agrandir */
+    text-align: center; /* Centrer le texte horizontalement */
+    text-decoration: none; /* Supprime la soulignement du texte */
+    display: inline-block; /* Affiche le bouton en tant que bloc en ligne */
+    font-size: 16px; /* Taille de la police */
+    margin: 4px 2px; /* Marge extérieure */
+    cursor: pointer; /* Curseur de la souris au survol */
+    border-radius: 8px; /* Bordure arrondie */
+    margin-left: 1vh;
+    margin-right: 1vh;
+}
+.add-button:hover {
+    background-color: #6e6e6e; /* Couleur de fond du bouton au survol */
+}
+.add-button:active {
+    background-color: #3f3f3f; /* Couleur de fond du bouton lorsqu'il est cliqué */
+}
+#server-list {
+    font-size: 5vh;
+    font-weight: bold;
+    color: white;
+    max-height: 400px; /* Définir la hauteur maximale de la liste */
+    overflow-y: auto;
+}
+#content-add-server {
+    display: none;
+    width:30%;
+    height: 30%;
+    right: 0PX;
+    margin-left: 25%;
+    margin: 20px;
+    padding: 20px;
+    border: 2px solid #ffffff;
+    border-radius: 5px;
+}
+#data-server {
+    display: none;
+    width: 50%;
+    height: 70%;
+    margin: 20px;
+    padding: 20px;
+    border: 2px solid #ffffff;
+    border-radius: 5px;
+    overflow: auto;
+    position: fixed;
+    top: 50px;
+    right: 0;
+    left: 40vh;
+}
+#server-name {
+    color: #757575;
+    font-size: 2em;
+    margin-bottom: 10px;
+}
+#controls {
+    display: flex;
+    margin-bottom: 20px;
+}
+#console {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+#server-console {
+    flex-grow: 1;
+    padding: 10px;
+    margin-right: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+#server-console-viewer {
+    overflow-y: auto;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    max-height: 300px; /* Par exemple, ajustez cette valeur selon vos besoins */
+    box-sizing: border-box; /* Pour inclure le padding et la bordure dans la hauteur */
+}
+h1 {
+    font-size: 6vh;
+    margin-top: 1vh;
+}
+h2 {
+    color: rgba(192, 192, 192, 0.568); /* Gris clair */
+    font-size: 4vh;
+    padding: 10px;
+}
+
+/* Styles pour les téléphones */
+@media only screen and (max-width: 768px) {
+    .container {
+        padding: 2vh; /* Réduire l'espacement */
+    }
+
+    #add-button {
+        padding: 2vh 8vh; /* Réduire la taille du bouton */
+    }
+
+    #server-list {
+        font-size: 3vh; /* Réduire la taille de la police */
+        max-height: 200px; /* Réduire la hauteur de la liste */
+    }
+
+    #content-add-server {
+        width: 80%; /* Ajuster la largeur du formulaire */
+        height: auto; /* Ajuster la hauteur automatiquement */
+        margin: 10px; /* Réduire la marge */
+        padding: 10px; /* Réduire le rembourrage */
+    }
+
+    #data-server {
+        width: 90%; /* Ajuster la largeur du contenu */
+        height: 50%; /* Réduire la hauteur */
+        margin: 10px; /* Réduire la marge */
+        padding: 10px; /* Réduire le rembourrage */
+        left: 30%;
+    }
+
+    h1 {
+        font-size: 4vh; /* Réduire la taille du titre */
+    }
+
+    h2 {
+        font-size: 3vh; /* Réduire la taille du sous-titre */
+        padding: 5px; /* Réduire le rembourrage */
+    }
+
+    .sidebar {
+        width: 30%; /* Réduire la largeur de la sidebar */
+    }
+}

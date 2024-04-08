@@ -7,7 +7,7 @@ const MinecraftServer = require('./server/minecraft/index.js');
 const FileExplorer = require('./server/file_explorer/index.js')
 
 const app = express();
-const port = 3000;
+const port = 80;
 const server = http.createServer(app);
 const socket = socketIO(server);
 

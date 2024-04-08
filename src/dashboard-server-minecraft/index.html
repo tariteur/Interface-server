@@ -4,124 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Créer et démarrer des serveurs Minecraft</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-            background-color: #2f2f2f; /* Fond gris clair */
-            height: 100vh;
-            overflow: hidden; /* Empêche le défilement de la page */
-        }
+    
+    <link rel="stylesheet" href="styles.css">
 
-        .container {
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            align-items: center;
-            padding: 5vh;
-            height: 100vh;
-        }
-
-        .content {
-            z-index: 1;
-            text-align: center;
-            margin-top: 2vh;
-        }
-
-        .sidebar {
-            width: 40vh;
-            background-color: #212121; /* Fond gris foncé */
-            height: 100vh;
-            position: absolute; /* Définit la position absolue */
-            left: 0px;
-            top: 0px;
-        }
-
-        #add-button {
-            background-color: #ffffff; /* Couleur de fond du bouton */
-            border: none; /* Supprime la bordure */
-            color: #1f1f1f; /* Couleur du texte */
-            padding: 4vh 16vh; /* Espacement intérieur du bouton, ajusté pour agrandir */
-            text-align: center; /* Centrer le texte horizontalement */
-            text-decoration: none; /* Supprime la soulignement du texte */
-            display: inline-block; /* Affiche le bouton en tant que bloc en ligne */
-            font-size: 16px; /* Taille de la police */
-            margin: 4px 2px; /* Marge extérieure */
-            cursor: pointer; /* Curseur de la souris au survol */
-            border-radius: 8px; /* Bordure arrondie */
-            margin-left: 1vh;
-            margin-right: 1vh;
-        }
-
-        .add-button:hover {
-            background-color: #6e6e6e; /* Couleur de fond du bouton au survol */
-        }
-
-        .add-button:active {
-            background-color: #3f3f3f; /* Couleur de fond du bouton lorsqu'il est cliqué */
-        }
-
-        #server-list {
-            font-size: 5vh;
-            font-weight: bold;
-            color: white;
-            max-height: 400px; /* Définir la hauteur maximale de la liste */
-            overflow-y: auto;
-        }
-
-        #content-add-server {
-            display: none;
-            width:30%;
-            height: 30%;
-            right: 0PX;
-            margin-left: 25%;
-            margin: 20px;
-            padding: 20px;
-            border: 2px solid #ffffff;
-            border-radius: 5px;
-        }
-
-        #data-server {
-            display: none;
-            width:30%;
-            height: 70%;
-            right: 0PX;
-            margin-left: 25%;
-            margin: 20px;
-            padding: 20px;
-            border: 2px solid #ffffff;
-            border-radius: 5px;
-        }
-
-        #console {
-            display: block;
-            width:84%;
-            height: 65%;
-            margin: 20px;
-            padding: 20px;
-            border: 2px solid #ffffff;
-            border-radius: 5px;
-        }
-
-        #server-console-viewer {
-            color: rgb(92, 92, 92);
-            max-height: 300px; /* Définir la hauteur maximale de la liste */
-            overflow-y: auto;
-        }
-
-        h1 {
-            font-size: 6vh;
-            margin-top: 1vh;
-        }
-
-        h2 {
-            color: rgba(192, 192, 192, 0.568); /* Gris clair */
-            font-size: 4vh;
-            padding: 10px;
-        }
-
-    </style>
     <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
     <script src="menu_serveur_mincraft.js"></script>
 </head>
@@ -147,8 +32,10 @@
         </div>
         <div id="data-server">
             <h2 id="server-name">...</h2>
-            <button id="start-server-button">Démarrer</button>
-            <button id="stop-server-button">Arretter</button>
+            <div id="controls">
+                <button id="start-server-button">Démarrer</button>
+                <button id="stop-server-button">Arretter</button>
+            </div>
             <div id="console">server-console
                 <input id="server-console"></input>
                 <button id="send-command-button">Envoyer</button>
@@ -156,6 +43,7 @@
                     <!-- Log server -->
                 </ul>
             </div>
+            <object data="../file-explorer/index.html" type="text/html"></object>
         </div>
     </div>
 </body>

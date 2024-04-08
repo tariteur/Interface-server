@@ -1,10 +1,15 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const contentContainer = document.getElementById('contentContainer');
-    const backButton = document.getElementById('backButton');
-    const popupMessage = document.getElementById('popupMessage');
-    let currentPath = '';
+class FileExplorer {
+    constructor(contentContainerId, backButtonId, popupMessageId) {
+        this.contentContainer = document.getElementById(contentContainerId);
+        this.backButton = document.getElementById(backButtonId);
+        this.popupMessage = document.getElementById(popupMessageId);
+        this.currentPath = '';
 
-    const loadFiles = async (path = '') => {
+        this.backButton.addEventListener('click', this.navigateToParentDirectory.bind(this));
+        this.loadFiles(); // Chargement initial des fichiers
+    }
+
+    async loadFiles(path = '') {
         try {
             const response = await fetch(`/file_explorer/files/${path}`);
             if (!response.ok) {
@@ -13,36 +18,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const data = await response.json();
 
-            currentPath = path;
+            this.currentPath = path;
             const breadcrumbs = path ? path : 'Racine';
-            renderBreadcrumbs(breadcrumbs);
-            renderFileList(data);
-            backButton.style.display = currentPath === '' ? 'none' : 'block';
+            this.renderBreadcrumbs(breadcrumbs);
+            this.renderFileList(data);
+            this.backButton.style.display = this.currentPath === '' ? 'none' : 'block';
         } catch (error) {
             console.error('Erreur lors du chargement des fichiers', error);
         }
-    };
+    }
 
-    const renderBreadcrumbs = (breadcrumbs) => {
-        contentContainer.innerHTML = `<div class="breadcrumbs">${breadcrumbs}</div>`;
-    };
+    renderBreadcrumbs(breadcrumbs) {
+        this.contentContainer.innerHTML = `<div class="breadcrumbs">${breadcrumbs}</div>`;
+    }
 
-    const renderFileList = (data) => {
+    renderFileList(data) {
         const fileList = document.createElement('div');
         fileList.className = 'file-list';
 
         data.forEach(item => {
-            const fileItem = createFileItem(item);
+            const fileItem = this.createFileItem(item);
             fileList.appendChild(fileItem);
         });
 
-        contentContainer.appendChild(fileList);
-    };
+        this.contentContainer.appendChild(fileList);
+    }
 
-    const createFileItem = (item) => {
+    createFileItem(item) {
         const fileItem = document.createElement('div');
         fileItem.className = 'file-item';
-        const iconPath = item.isDirectory ? 'img/folder.png' : getIconPath(item.name);
+        const iconPath = item.isDirectory ? 'img/folder.png' : this.getIconPath(item.name);
 
         fileItem.innerHTML = `
             <img src="${iconPath}" alt="${item.name}">
@@ -50,29 +55,29 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
 
         if (!item.isDirectory) {
-            const fileExtension = getFileExtension(item.name);
-            if (!isSupported(fileExtension)) {
+            const fileExtension = this.getFileExtension(item.name);
+            if (!this.isSupported(fileExtension)) {
                 fileItem.classList.add('unsupported');
             }
         }
 
         fileItem.addEventListener('click', async () => {
             if (item.isDirectory) {
-                await loadFiles(`${currentPath ? currentPath + '/' : ''}${item.name}`);
+                await this.loadFiles(`${this.currentPath ? this.currentPath + '/' : ''}${item.name}`);
             } else {
-                openFile(item);
+                this.openFile(item);
             }
         });
 
         return fileItem;
-    };
+    }
 
-    const openFile = async (file) => {
-        const filePath = `${currentPath ? currentPath + '/' : ''}${file.name}`;
+    async openFile(file) {
+        const filePath = `${this.currentPath ? this.currentPath + '/' : ''}${file.name}`;
         try {
-            const extension = getFileExtension(file.name).toLowerCase();
-            if (!isSupported(extension)) {
-                showPopup(`Can't open .${extension} files`);
+            const extension = this.getFileExtension(file.name).toLowerCase();
+            if (!this.isSupported(extension)) {
+                this.showPopup(`Can't open .${extension} files`);
                 return;
             }
 
@@ -82,27 +87,27 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const fileContent = await response.text();
-            renderBreadcrumbs(filePath || 'unknown');
-            renderFileContent(fileContent, filePath);
-            backButton.style.display = filePath === '' ? 'none' : 'block';
+            this.renderBreadcrumbs(filePath || 'unknown');
+            this.renderFileContent(fileContent, filePath);
+            this.backButton.style.display = filePath === '' ? 'none' : 'block';
         } catch (error) {
             console.error('Une erreur s\'est produite : ', error);
         }
-    };
+    }
 
-    const renderFileContent = (fileContent, filePath) => {
+    renderFileContent(fileContent, filePath) {
         const textarea = document.createElement('textarea');
         textarea.className = 'textarea';
         textarea.value = fileContent;
 
         textarea.addEventListener('input', async () => {
-            await saveFileContent(filePath, textarea.value);
+            await this.saveFileContent(filePath, textarea.value);
         });
 
-        contentContainer.appendChild(textarea);
-    };
+        this.contentContainer.appendChild(textarea);
+    }
 
-    const saveFileContent = async (filePath, content) => {
+    async saveFileContent(filePath, content) {
         try {
             await fetch(`/file_explorer/save-file/${filePath}`, {
                 method: 'POST',
@@ -112,22 +117,26 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Erreur lors de l\'enregistrement du fichier', error);
         }
-    };
+    }
 
-    const getFileExtension = (fileName) => fileName.split('.').pop();
+    getFileExtension(fileName) {
+        return fileName.split('.').pop();
+    }
 
-    const isSupported = (extension) => ['json', 'txt', 'properties', 'log'].includes(extension);
+    isSupported(extension) {
+        return ['json', 'txt', 'properties', 'log'].includes(extension);
+    }
 
-    const showPopup = (message) => {
-        popupMessage.textContent = message;
-        popupMessage.style.display = 'block';
+    showPopup(message) {
+        this.popupMessage.textContent = message;
+        this.popupMessage.style.display = 'block';
         setTimeout(() => {
-            popupMessage.style.display = 'none';
+            this.popupMessage.style.display = 'none';
         }, 3000);
-    };
+    }
 
-    const getIconPath = (fileName) => {
-        const extension = getFileExtension(fileName).toLowerCase();
+    getIconPath(fileName) {
+        const extension = this.getFileExtension(fileName).toLowerCase();
         const iconMap = {
             'js': 'img/file-js.png',
             'json': 'img/file-json.png',
@@ -138,13 +147,15 @@ document.addEventListener('DOMContentLoaded', () => {
             'jar': 'img/file-jar.png'
         };
         return iconMap[extension] || 'img/file.png'; // Icône de fichier par défaut
-    };
+    }
 
-    const navigateToParentDirectory = () => {
-        const parentPath = currentPath.split('/').slice(0, -1).join('/');
-        loadFiles(parentPath);
-    };
+    navigateToParentDirectory() {
+        const parentPath = this.currentPath.split('/').slice(0, -1).join('/');
+        this.loadFiles(parentPath);
+    }
+}
 
-    backButton.addEventListener('click', navigateToParentDirectory);
-    loadFiles(); // Chargement initial des fichiers
+// Utilisation de la classe FileExplorer
+document.addEventListener('DOMContentLoaded', () => {
+    const fileExplorer = new FileExplorer('contentContainer', 'backButton', 'popupMessage');
 });
