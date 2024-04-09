@@ -66,20 +66,27 @@ class FileExplorer {
     createFileItem(item) {
         const fileItem = document.createElement('div');
         fileItem.className = 'file-item';
+    
+        // Ajouter une icône et un nom de fichier
         const iconPath = item.isDirectory ? 'img/folder.png' : this.getIconPath(item.name);
-
         fileItem.innerHTML = `
             <img src="${iconPath}" alt="${item.name}">
             <span>${item.name}</span>
         `;
-
-        if (!item.isDirectory) {
-            const fileExtension = this.getFileExtension(item.name);
-            if (!this.isSupported(fileExtension)) {
-                fileItem.classList.add('unsupported');
-            }
-        }
-
+    
+        // Ajouter un bouton de téléchargement
+        const downloadButton = document.createElement('button');
+        downloadButton.textContent = '⬇️'; // Icône de flèche vers le bas
+        downloadButton.className = 'download-button';
+    
+        downloadButton.addEventListener('click', async (event) => {
+            event.stopPropagation(); // Arrêter la propagation pour éviter de déclencher le clic de l'élément parent
+            await this.downloadFile(item);
+        });
+    
+        fileItem.appendChild(downloadButton);
+    
+        // Ajouter un gestionnaire d'événements pour le clic sur l'élément de fichier
         fileItem.addEventListener('click', async () => {
             if (item.isDirectory) {
                 await this.loadFiles(`${this.currentPath ? this.currentPath + '/' : ''}${item.name}`);
@@ -87,7 +94,15 @@ class FileExplorer {
                 this.openFile(item);
             }
         });
-
+    
+        // Marquer les fichiers non pris en charge
+        if (!item.isDirectory) {
+            const fileExtension = this.getFileExtension(item.name);
+            if (!this.isSupported(fileExtension)) {
+                fileItem.classList.add('unsupported');
+            }
+        }
+    
         return fileItem;
     }
 
@@ -137,6 +152,31 @@ class FileExplorer {
             console.error('Erreur lors de l\'enregistrement du fichier', error);
         }
     }
+
+    async downloadFile(item) {
+        const filePath = `${this.currentPath ? this.currentPath + '/' : ''}${item.name}`;
+        try {
+            const response = await fetch(`/file_explorer/download/${filePath}`);
+            if (!response.ok) {
+                throw new Error('Échec du téléchargement du fichier');
+            }
+    
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = item.name;
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Une erreur s\'est produite lors du téléchargement du fichier : ', error);
+            this.showPopup('Erreur lors du téléchargement du fichier');
+        }
+    }
+    
 
     getFileExtension(fileName) {
         return fileName.split('.').pop();
