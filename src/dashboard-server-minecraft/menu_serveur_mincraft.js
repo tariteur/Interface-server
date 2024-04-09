@@ -1,7 +1,7 @@
 class MinecraftServerClient {
     constructor() {
         this.selectServer = { name: "", versions: "" };
-        this.socket = io('http://localhost:80');
+        this.socket = io('http://localhost:3000');
         this.setupSocketListeners();
         this.setupEventListeners();
         this.fetchVersions();

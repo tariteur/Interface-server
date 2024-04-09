@@ -22,9 +22,25 @@ body {
     margin-bottom: 0;
 }
 .content {
+    position: fixed;
+    top: 0px;
+    left: 40vh;
     z-index: 1;
-    text-align: center;
     margin-top: 2vh;
+}
+#data-server {
+    display: none;
+    width: 50%;
+    height: 70%;
+    margin: 20px;
+    padding: 20px;
+    border: 2px solid #ffffff;
+    border-radius: 5px;
+    overflow: auto;
+    position: fixed;
+    top: 50px;
+    right: 0;
+    left: 40vh;
 }
 .sidebar {
     width: 40vh;
@@ -120,6 +136,11 @@ body {
 h1 {
     font-size: 6vh;
     margin-top: 1vh;
+    text-shadow: 
+        -1px -1px 0 #535353,  
+        1px -1px 0 #535353,
+        -1px 1px 0 #535353,
+        1px 1px 0 #535353;
 }
 h2 {
     color: rgba(192, 192, 192, 0.568); /* Gris clair */
