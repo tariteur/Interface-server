@@ -4,13 +4,55 @@ const axios = require('axios');
 const path = require('path');
 
 class MinecraftServer {
-    constructor(socket, javaPath, serverFolder) {
+    constructor(app, socket, javaPath, serverFolder) {
+        this.app = app;
+        this.socket = socket;
         this.javaPath = javaPath;
-        this.serverFolder = serverFolder;
+        this.serverFolder = `${serverFolder}/minecraft_server`;
         this.running = false;
         this.minecraftProcesses = new Map();
         this.versions = require('./versions.json');
-        this.socket = socket;
+
+        this.setupRoutes();
+    }
+
+    setupRoutes() {
+        this.app.all('/minecraft/:action', async (req, res) => {
+            const { action } = req.params;
+            const { serverName, serverVersion, command } = req.body;
+
+            try {
+                let message;
+
+                switch (action) {
+                    case 'addServer':
+                        message = await this.addServer(serverName, serverVersion);
+                        break;
+                    case 'startServer':
+                        message = this.startServer(serverName, serverVersion);
+                        break;
+                    case 'stopServer':
+                        message = this.stopServer(serverName);
+                        break;
+                    case 'sendCommand':
+                        message = this.sendCommand(serverName, command);
+                        break;
+                    case 'getVersionInfo':
+                        message = this.getVersionInfo();
+                        break;
+                    case 'getServersList':
+                        message = await this.getServersList();
+                        break;
+                    default:
+                        res.status(404).send('Action not found');
+                        return;
+                }
+
+                res.send(message);
+            } catch (error) {
+                res.status(500).send(`Error: ${error.message}`);
+            }
+        });
     }
 
     async addServer(serverName , serverVersion) {
@@ -19,8 +61,7 @@ class MinecraftServer {
             console.log(`Fichier JAR de la version ${serverVersion} téléchargé avec succès pour le serveur ${serverName}.`);
         } catch (error) {
             console.error(`Erreur lors du téléchargement du fichier JAR : ${error.message}`);
-            res.status(500).send(`Une erreur est survenue lors du téléchargement du fichier JAR : ${error.message}`);
-            return;
+            return `Erreur lors de l'ajout du serveur ${serverName} en ${serverVersion} lors du téléchargement du fichier JAR : ${error.message}`
         }
     
         const command = `"${this.javaPath}" -jar minecraft_server.${serverVersion}.jar`;
@@ -29,7 +70,7 @@ class MinecraftServer {
         const child = exec(command, { cwd: filePath }, async (error, stdout, stderr) => {
             if (error) {
                 console.error(`Erreur lors de l'exécution de la commande : ${error}`);
-                return;
+                return `Erreur lors de l'ajout du serveur ${serverName} en ${serverVersion} : ${error}`
             }
             console.log(`Sortie de la commande : ${stdout}`);
             console.error(`Erreurs de la commande : ${stderr}`);
@@ -86,14 +127,14 @@ class MinecraftServer {
             minecraftProcess.stdin.write("stop" + '\n');
             this.minecraftProcesses.delete(serverName);
             res.send('Arrêt du serveur en cours.');
+            return `Le serveur ${serverName} va s'arrêter`
         } else {
-            res.status(404).send('Le serveur spécifié n\'est pas en cours d\'exécution.');
+            return `Errer lors de la fermeture du serveur ${serverName}`
         }
     }
 
-    async downloadJar(serverName, version, serverFolder) {
-        const versionInfo = await this.getVersionInfo(version);
-        console.log(`${serverName}, ${versionInfo.url}`);
+    async downloadJar(serverName, version) {
+        const versionInfo = this.getVersionInfo(version);
     
         if (!versionInfo) {
             throw new Error(`La version ${version} n'est pas disponible.`);

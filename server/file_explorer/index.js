@@ -11,83 +11,80 @@ class FileExplorer {
     }
 
     setupRoutes() {
-        const app = this.app;
-        const rootDirectory = this.rootDirectory;
-
-        // Route pour lister les fichiers dans un répertoire
-        app.get('/file_explorer/files/*', async (req, res) => {
-            const requestedPath = req.params[0] || '';
-            const directoryPath = path.join(rootDirectory, requestedPath);
-          
+        this.app.get('/file_explorer/*', async (req, res) => {
+            const urlPath = req.params[0] || '';
+            const { action } = req.params;
+            const { content } = req.body;
+            const parts = urlPath.split('/');
+            const filePath = path.join(this.rootDirectory, parts.slice(1).join('/'));
+    
             try {
-                const files = await fs.readdir(directoryPath);
-                const fileList = [];
-          
-                for (const file of files) {
-                    const filePath = path.join(directoryPath, file);
-                    const stats = await fs.stat(filePath);
-          
-                    fileList.push({
-                        name: file,
-                        isDirectory: stats.isDirectory(),
-                        path: path.join(requestedPath, file)
-                    });
+                let message;
+                
+                switch (action) {
+                    case 'files':
+                        message = await this.handleGetFiles(filePath, urlPath);
+                        break;
+                    case 'file-content':
+                        message = await this.handleGetFileContent(filePath);
+                        break;
+                    case 'download':
+                        message = await this.handleDownloadFile(filePath);
+                        break;
+                    case 'save-file':
+                        message = await this.handleSaveFile(content, filePath);
+                        break;
+                    default:
+                        res.status(404).send('Action non supportée');
+                        break;
                 }
-          
-                res.json(fileList);
+                
+                console.log(message)
+                res.send(message);
             } catch (err) {
-                console.error('Erreur lors de la lecture du répertoire', err);
-                res.status(500).send('Erreur de lecture du répertoire');
+                console.error('Erreur lors du traitement de la requête', err);
+                res.status(500).send('Une erreur s\'est produite');
             }
         });
-
-        // Route pour lire le contenu d'un fichier
-        app.get('/file_explorer/file-content/*', async (req, res) => {
-            const filePath = path.join(rootDirectory, req.params[0]);
-          
-            try {
-                const fileContent = await fs.readFile(filePath, 'utf-8');
-                res.send(fileContent);
-            } catch (err) {
-                console.error('Erreur lors de la lecture du fichier', err);
-                res.status(500).send('Erreur de lecture du fichier');
-            }
-        });
-
-        // Route pour télécharger un fichier
-        app.get('/file_explorer/download/*', async (req, res) => {
-            const filePath = path.join(rootDirectory, req.params[0]);
-          
-            try {
-                const fileStats = await fs.stat(filePath);
-                if (!fileStats.isFile()) {
-                    return res.status(404).send('Le chemin spécifié ne correspond pas à un fichier');
-                }
-          
-                // Envoi du fichier au client
-                res.download(filePath, path.basename(filePath));
-            } catch (err) {
-                console.error('Erreur lors de la lecture du fichier', err);
-                res.status(500).send('Erreur de lecture du fichier');
-            }
-        });
-
-        // Route pour enregistrer le contenu dans un fichier
-        app.post('/file_explorer/save-file/*', async (req, res) => {
-            const filePath = path.join(rootDirectory, req.params[0]);
-            const content = req.body; // Assurez-vous que req.body contient le contenu à enregistrer
-            console.log(content)
-            try {
-                // Convertir le contenu en chaîne de caractères si nécessaire
-                const contentString = typeof content === 'string' ? content : JSON.stringify(content);
-
-                await fs.writeFile(filePath, contentString, 'utf-8');
-                res.send('Contenu du fichier enregistré avec succès !');
-            } catch (err) {
-                console.error('Erreur lors de l\'enregistrement du fichier', err);
-                res.status(500).send('Erreur lors de l\'enregistrement du fichier');
-            }
-        });
+    }
+    
+    async handleGetFiles(directoryPath, requestedPath) {
+        const files = await fs.readdir(directoryPath);
+        const fileList = [];
+    
+        for (const file of files) {
+            const filePath = path.join(directoryPath, file);
+            const stats = await fs.stat(filePath);
+    
+            fileList.push({
+                name: file,
+                isDirectory: stats.isDirectory(),
+                path: path.join(requestedPath, file)
+            });
+        }
+    
+        return fileList
+    }
+    
+    async handleGetFileContent(filePath) {
+        const fileContent = await fs.readFile(filePath, 'utf-8');
+        return fileContent
+    }
+    
+    async handleDownloadFile(filePath) {
+        const fileStats = await fs.stat(filePath);
+        if (!fileStats.isFile()) {
+            return res.status(404).send('Le chemin spécifié ne correspond pas à un fichier');
+        }
+        res.download(filePath, path.basename(filePath));
+    }
+    
+    async handleSaveFile(content, filePath) {
+        console.log(content)
+        const contentString = typeof content === 'string' ? content : JSON.stringify(content);
+        
+        await fs.writeFile(filePath, contentString, 'utf-8');
+        return 'Contenu du fichier enregistré avec succès !'
     }
 }
 
