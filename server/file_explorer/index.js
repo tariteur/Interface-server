@@ -1,9 +1,11 @@
+const path = require('path');
+const fs = require('fs').promises;
+
 class FileExplorer {
     constructor(app, rootDirectory) {
         this.app = app;
         this.rootDirectory = rootDirectory;
 
-        // Configurer les routes pour l'explorateur de fichiers
         this.setupRoutes();
     }
 
@@ -11,98 +13,124 @@ class FileExplorer {
         const app = this.app;
         const rootDirectory = this.rootDirectory;
 
-        // Route principale de l'explorateur de fichiers
-        app.all('/file_explorer/:action(/*)?', async (req, res) => {
-            const { action } = req.params;
+        app.get('/file_explorer/files/*', async (req, res) => {
             const requestedPath = req.params[0] || '';
+            const directoryPath = path.join(rootDirectory, requestedPath);
 
-            switch (action) {
-                case 'files':
-                    await this.listFiles(res, requestedPath);
-                    break;
-                case 'file-content':
-                    await this.readFileContent(res, requestedPath);
-                    break;
-                case 'download':
-                    await this.downloadFile(res, requestedPath);
-                    break;
-                case 'save-file':
-                    await this.saveFile(req, res, requestedPath);
-                    break;
-                default:
-                    res.status(404).send('Action non prise en charge');
+            try {
+                const files = await fs.readdir(directoryPath);
+                const fileList = [];
+
+                for (const file of files) {
+                    const filePath = path.join(directoryPath, file);
+                    const stats = await fs.stat(filePath);
+
+                    fileList.push({
+                        name: file,
+                        isDirectory: stats.isDirectory(),
+                        path: path.join(requestedPath, file)
+                    });
+                }
+
+                res.json(fileList);
+            } catch (err) {
+                console.error('Erreur lors de la lecture du répertoire', err);
+                res.status(500).send('Erreur de lecture du répertoire');
             }
         });
-    }
 
-    async listFiles(res, requestedPath) {
-        const directoryPath = path.join(this.rootDirectory, requestedPath);
+        app.get('/file_explorer/file-content/*', async (req, res) => {
+            const filePath = path.join(rootDirectory, req.params[0]);
 
-        try {
-            const files = await fs.readdir(directoryPath);
-            const fileList = [];
-
-            for (const file of files) {
-                const filePath = path.join(directoryPath, file);
-                const stats = await fs.stat(filePath);
-
-                fileList.push({
-                    name: file,
-                    isDirectory: stats.isDirectory(),
-                    path: path.join(requestedPath, file)
-                });
+            try {
+                const fileContent = await fs.readFile(filePath, 'utf-8');
+                res.send(fileContent);
+            } catch (err) {
+                console.error('Erreur lors de la lecture du fichier', err);
+                res.status(500).send('Erreur de lecture du fichier');
             }
+        });
 
-            res.json(fileList);
-        } catch (err) {
-            console.error('Erreur lors de la lecture du répertoire', err);
-            res.status(500).send('Erreur de lecture du répertoire');
-        }
-    }
+        app.get('/file_explorer/download/*', async (req, res) => {
+            const filePath = path.join(rootDirectory, req.params[0]);
 
-    async readFileContent(res, requestedPath) {
-        const filePath = path.join(this.rootDirectory, requestedPath);
+            try {
+                const fileStats = await fs.stat(filePath);
+                if (!fileStats.isFile()) {
+                    return res.status(404).send('Le chemin spécifié ne correspond pas à un fichier');
+                }
 
-        try {
-            const fileContent = await fs.readFile(filePath, 'utf-8');
-            res.send(fileContent);
-        } catch (err) {
-            console.error('Erreur lors de la lecture du fichier', err);
-            res.status(500).send('Erreur de lecture du fichier');
-        }
-    }
-
-    async downloadFile(res, requestedPath) {
-        const filePath = path.join(this.rootDirectory, requestedPath);
-
-        try {
-            const fileStats = await fs.stat(filePath);
-            if (!fileStats.isFile()) {
-                return res.status(404).send('Le chemin spécifié ne correspond pas à un fichier');
+                res.download(filePath, path.basename(filePath));
+            } catch (err) {
+                console.error('Erreur lors de la lecture du fichier', err);
+                res.status(500).send('Erreur de lecture du fichier');
             }
+        });
 
-            // Envoi du fichier au client
-            res.download(filePath, path.basename(filePath));
-        } catch (err) {
-            console.error('Erreur lors de la lecture du fichier', err);
-            res.status(500).send('Erreur de lecture du fichier');
-        }
-    }
+        app.post('/file_explorer/save-file', async (req, res) => {
+            const filePath = path.join(rootDirectory, req.body.filePath);
 
-    async saveFile(req, res, requestedPath) {
-        const filePath = path.join(this.rootDirectory, requestedPath);
-        const content = req.body; // Assurez-vous que req.body contient le contenu à enregistrer
+            const content = req.body.content;
+            console.log(content)
+            try {
+                // Écrire le contenu dans le fichier
+                await fs.writeFile(filePath, content, 'utf-8');
+        
+                // Envoyer une réponse de succès
+                res.status(200).json({ message: 'Contenu du fichier enregistré avec succès !' });
+            } catch (error) {
+                console.error('Erreur lors de l\'enregistrement du fichier :', error);
+                res.status(500).json({ error: 'Erreur lors de l\'enregistrement du fichier' });
+            }
+        });
+        
 
-        try {
-            // Convertir le contenu en chaîne de caractères si nécessaire
-            const contentString = typeof content === 'string' ? content : JSON.stringify(content);
+        app.post('/file_explorer/create-directory/*', async (req, res) => {
+            const newDirectoryPath = path.join(rootDirectory, req.params[0]);
+        
+            try {
+                await fs.mkdir(newDirectoryPath);
+                res.send('Répertoire créé avec succès !');
+            } catch (err) {
+                console.error('Erreur lors de la création du répertoire', err);
+                res.status(500).send('Erreur lors de la création du répertoire');
+            }
+        });
 
-            await fs.writeFile(filePath, contentString, 'utf-8');
-            res.send('Contenu du fichier enregistré avec succès !');
-        } catch (err) {
-            console.error('Erreur lors de l\'enregistrement du fichier', err);
-            res.status(500).send('Erreur lors de l\'enregistrement du fichier');
-        }
+        app.post('/file_explorer/create-file/:filename', async (req, res) => {
+            const { filename } = req.params;
+            console.log(filename)
+            const newFilePath = path.join(rootDirectory, filename);
+        
+            try {
+                // Vérifiez si le fichier contient une extension
+                const fileExtension = path.extname(filename);
+                if (!fileExtension) {
+                    throw new Error('Extension de fichier manquante');
+                }
+        
+                // Créez le fichier vide dans le répertoire spécifié
+                await fs.writeFile(newFilePath, '');
+        
+                res.send('Fichier créé avec succès !');
+            } catch (err) {
+                console.error('Erreur lors de la création du fichier', err);
+                res.status(500).send('Erreur lors de la création du fichier');
+            }
+        });
+
+        app.delete('/file_explorer/delete/*', async (req, res) => {
+            const filePath = path.join(rootDirectory, req.params[0]);
+        
+            try {
+                await fs.unlink(filePath);
+                res.send('Fichier supprimé avec succès !');
+            } catch (err) {
+                console.error('Erreur lors de la suppression du fichier', err);
+                res.status(500).send('Erreur lors de la suppression du fichier');
+            }
+        });
+        
     }
 }
 

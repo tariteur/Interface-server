@@ -1,5 +1,9 @@
 # Ignorer le dossier minecraft_server
 minecraft_server/
 
+# Ignorer le dossier file_sharing
+file_sharing/
+
 # Ignorer le dossier node_modules
 node_modules/
+

@@ -6,7 +6,18 @@ class FileExplorer {
         this.currentPath = '';
 
         this.backButton.addEventListener('click', this.navigateToParentDirectory.bind(this));
+        window.addEventListener('contextmenu', (event) => {
+            event.preventDefault();
 
+            this.removeContextMenu();
+
+            this.showContextMenu(event.clientX, event.clientY);
+        });
+
+        window.addEventListener('click', () => {
+            this.removeContextMenu();
+        });
+        
         this.urlParams = new URLSearchParams(window.location.search);
         this.rootDirectory = this.urlParams.get('rootDirectory');
         this.loadFiles(this.rootDirectory);
@@ -67,26 +78,34 @@ class FileExplorer {
         const fileItem = document.createElement('div');
         fileItem.className = 'file-item';
     
-        // Ajouter une icône et un nom de fichier
         const iconPath = item.isDirectory ? 'img/folder.png' : this.getIconPath(item.name);
         fileItem.innerHTML = `
             <img src="${iconPath}" alt="${item.name}">
             <span>${item.name}</span>
         `;
     
-        // Ajouter un bouton de téléchargement
-        const downloadButton = document.createElement('button');
-        downloadButton.textContent = '⬇️'; // Icône de flèche vers le bas
-        downloadButton.className = 'download-button';
+        fileItem.addEventListener('mouseenter', () => {
+            if (!item.isDirectory) {
+                const downloadButton = document.createElement('button');
+                downloadButton.textContent = '⬇️';
+                downloadButton.className = 'download-button';
     
-        downloadButton.addEventListener('click', async (event) => {
-            event.stopPropagation(); // Arrêter la propagation pour éviter de déclencher le clic de l'élément parent
-            await this.downloadFile(item);
+                downloadButton.addEventListener('click', async (event) => {
+                    event.stopPropagation();
+                    await this.downloadFile(item);
+                });
+    
+                fileItem.appendChild(downloadButton);
+            }
         });
     
-        fileItem.appendChild(downloadButton);
+        fileItem.addEventListener('mouseleave', () => {
+            const downloadButton = fileItem.querySelector('.download-button');
+            if (downloadButton) {
+                fileItem.removeChild(downloadButton);
+            }
+        });
     
-        // Ajouter un gestionnaire d'événements pour le clic sur l'élément de fichier
         fileItem.addEventListener('click', async () => {
             if (item.isDirectory) {
                 await this.loadFiles(`${this.currentPath ? this.currentPath + '/' : ''}${item.name}`);
@@ -95,17 +114,10 @@ class FileExplorer {
             }
         });
     
-        // Marquer les fichiers non pris en charge
-        if (!item.isDirectory) {
-            const fileExtension = this.getFileExtension(item.name);
-            if (!this.isSupported(fileExtension)) {
-                fileItem.classList.add('unsupported');
-            }
-        }
-    
         return fileItem;
     }
-
+    
+    
     async openFile(file) {
         const filePath = `${this.currentPath ? this.currentPath + '/' : ''}${file.name}`;
         try {
@@ -129,6 +141,35 @@ class FileExplorer {
         }
     }
 
+    async downloadFile(item) {
+        if (item.isDirectory) {
+            this.showPopup('Impossible de télécharger des dossier');
+            return;
+        }
+        const filePath = `${this.currentPath ? this.currentPath + '/' : ''}${item.name}`;
+        try {
+            const response = await fetch(`/file_explorer/download/${filePath}`);
+            if (!response.ok) {
+                throw new Error('Échec du téléchargement du fichier');
+            }
+    
+            // Convertir la réponse en blob et créer un lien de téléchargement
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = item.name;
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Une erreur s\'est produite lors du téléchargement du fichier : ', error);
+        }
+    }
+    
+
     renderFileContent(fileContent, filePath) {
         const textarea = document.createElement('textarea');
         textarea.className = 'textarea';
@@ -143,40 +184,128 @@ class FileExplorer {
 
     async saveFileContent(filePath, content) {
         try {
-            await fetch(`/file_explorer/save-file/${filePath}`, {
+            const response = await fetch('/file_explorer/save-file', {
                 method: 'POST',
-                headers: { 'Content-Type': 'text/plain' },
-                body: content
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    filePath: filePath,
+                    content: content
+                })
             });
+    
+            if (response.ok) {
+                const responseData = await response.json();
+                console.log('Réponse du serveur :', responseData);
+            } else {
+                console.error('Échec de la requête :', response.statusText);
+            }
         } catch (error) {
-            console.error('Erreur lors de l\'enregistrement du fichier', error);
+            console.error('Erreur lors de la requête :', error);
+        }
+    }
+    
+    showContextMenu(clientX, clientY) {
+        const contextMenu = document.createElement('div');
+        contextMenu.className = 'context-menu';
+        contextMenu.style.position = 'fixed';
+        contextMenu.style.left = `${clientX}px`;
+        contextMenu.style.top = `${clientY}px`;
+        contextMenu.style.border = '1px solid black';
+        contextMenu.style.padding = '5px';
+        contextMenu.style.backgroundColor = 'white';
+
+        const newFileOption = document.createElement('div');
+        newFileOption.textContent = 'Nouveau Fichier';
+        newFileOption.addEventListener('click', () => {
+            this.handleNewFile();
+            this.removeContextMenu();
+        });
+        contextMenu.appendChild(newFileOption);
+
+        const newDirectoryOption = document.createElement('div');
+        newDirectoryOption.textContent = 'Nouveau Dossier';
+        newDirectoryOption.addEventListener('click', () => {
+            this.handleNewDirectory();
+            this.removeContextMenu();
+        });
+        contextMenu.appendChild(newDirectoryOption);
+
+        document.body.appendChild(contextMenu);
+
+        window.addEventListener('click', () => {
+            this.removeContextMenu();
+        }, { once: true });
+
+        contextMenu.addEventListener('click', (event) => {
+            event.stopPropagation();
+        });
+    }
+
+    removeContextMenu() {
+        const contextMenu = document.querySelector('.context-menu');
+        if (contextMenu) {
+            contextMenu.remove();
         }
     }
 
-    async downloadFile(item) {
-        const filePath = `${this.currentPath ? this.currentPath + '/' : ''}${item.name}`;
-        try {
-            const response = await fetch(`/file_explorer/download/${filePath}`);
-            if (!response.ok) {
-                throw new Error('Échec du téléchargement du fichier');
-            }
-    
-            const blob = await response.blob();
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = item.name;
-            a.style.display = 'none';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        } catch (error) {
-            console.error('Une erreur s\'est produite lors du téléchargement du fichier : ', error);
-            this.showPopup('Erreur lors du téléchargement du fichier');
+    // Gestionnaire de création d'un nouveau fichier
+    async handleNewFile() {
+        const newFileName = prompt('Nom du nouveau fichier :');
+        if (newFileName) {
+            const filePath = `${this.currentPath ? this.currentPath + '/' : ''}${newFileName}`;
+            await this.createFile(filePath);
         }
     }
-    
+
+    // Gestionnaire de création d'un nouveau dossier
+    async handleNewDirectory() {
+        const newDirectoryName = prompt('Nom du nouveau dossier :');
+        if (newDirectoryName) {
+            const directoryPath = `${this.currentPath ? this.currentPath + '/' : ''}${newDirectoryName}`;
+            await this.createDirectory(directoryPath);
+        }
+    }
+
+    // Méthode pour créer un nouveau fichier
+    async createFile(filePath) {
+        console.log(filePath)
+        try {
+            // Envoi d'une requête POST au serveur pour créer le fichier
+            const response = await fetch(`/file_explorer/create-file/${filePath}`, {
+                method: 'POST'
+            });
+            if (!response.ok) {
+                throw new Error('Erreur lors de la création du fichier');
+            }
+            const message = await response.text();
+            this.showPopup(message);
+            await this.loadFiles(this.currentPath); // Recharger les fichiers après la création du fichier
+        } catch (error) {
+            console.error('Erreur lors de la création du fichier', error);
+            this.showPopup('Erreur lors de la création du fichier');
+        }
+    }
+
+    // Méthode pour créer un nouveau répertoire
+    async createDirectory(directoryPath) {
+        try {
+            // Envoi d'une requête POST au serveur pour créer le répertoire
+            const response = await fetch(`/file_explorer/create-directory/${directoryPath}`, {
+                method: 'POST'
+            });
+            if (!response.ok) {
+                throw new Error('Erreur lors de la création du répertoire');
+            }
+            const message = await response.text();
+            this.showPopup(message);
+            await this.loadFiles(this.currentPath); // Recharger les fichiers après la création du répertoire
+        } catch (error) {
+            console.error('Erreur lors de la création du répertoire', error);
+            this.showPopup('Erreur lors de la création du répertoire');
+        }
+    }
 
     getFileExtension(fileName) {
         return fileName.split('.').pop();

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Live Update</title>
+</head>
+<body>
+    <div id="result"></div>
+
+    <script type="module">
+        import ReconnectingWebSocket from 'https://cdn.jsdelivr.net/npm/reconnecting-websocket@4.4.0/+esm';
+
+        const resultDiv = document.getElementById('result');
+        const socket = new ReconnectingWebSocket('ws://localhost:80');
+
+        socket.addEventListener('message', async (event) => {
+            const parsedMessage = JSON.parse(event.data);
+
+            if (parsedMessage.data.audioArray && parsedMessage.data.backgroundColor) {
+                const { audioArray, backgroundColor } = parsedMessage.data;
+
+                const minecraftColor = calculateMinecraftColor(audioArray, backgroundColor);
+                resultDiv.innerText = `RGB MC: ${minecraftColor}`;
+
+                // Envoi de la commande Minecraft avec la couleur calculée
+                const command1 = `/item replace entity @a armor.head with minecraft:leather_helmet{display:{color:${minecraftColor}},Tags:["disco"]}`;
+                const command2 = `/item replace entity @a armor.chest with minecraft:leather_chestplate{display:{color:${minecraftColor}},Tags:["disco"]}`;
+                const command3 = `/item replace entity @a armor.legs with minecraft:leather_leggings{display:{color:${minecraftColor}},Tags:["disco"]}`;
+                const command4 = `/item replace entity @a armor.feet with minecraft:leather_boots{display:{color:${minecraftColor}},Tags:["disco"]}`;
+
+                fetch('/minecraft/sendCommand', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        serverName: 'survie',
+                        command: command1
+                    })
+                });
+                fetch('/minecraft/sendCommand', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        serverName: 'survie',
+                        command: command2
+                    })
+                });
+                fetch('/minecraft/sendCommand', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        serverName: 'survie',
+                        command: command3
+                    })
+                });
+                fetch('/minecraft/sendCommand', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        serverName: 'survie',
+                        command: command4
+                    })
+                });
+            }
+        });
+
+        function calculateMinecraftColor(audioArray, backgroundColor) {
+            let bass = audioArray.slice(0, 40).reduce((sum, val) => sum + val * 2, 0) / (40 * 2 * 0.1);
+            const audioIntensity = Math.min(1, Math.max(0.1, (Math.floor(bass * 0.5 * 5) * 10) / 100));
+            const colorValue = parseInt(backgroundColor, 10);
+            const [red, green, blue] = [(colorValue >> 16) & 255, (colorValue >> 8) & 255, colorValue & 255];
+
+            const newRed = Math.round(red * audioIntensity);
+            const newGreen = Math.round(green * audioIntensity);
+            const newBlue = Math.round(blue * audioIntensity);
+
+            const minecraftColor = rgbToMinecraftColor(newRed, newGreen, newBlue);
+            return minecraftColor;
+        }
+
+        function rgbToMinecraftColor(r, g, b) {
+            return (r << 16) + (g << 8) + b;
+        }
+    </script>
+</body>
+</html>
